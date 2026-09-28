@@ -22,6 +22,11 @@ updates:
       # version deliberately and upgrades on purpose, not on a schedule.
       - dependency-name: next
         update-types: [version-update:semver-major]
+      # TypeScript 7 (the native compiler) no longer ships the compiler API
+      # that scripts/codemod-copy.ts parses pages with. Stay on 5 until the
+      # codemod moves to another parser.
+      - dependency-name: typescript
+        update-types: [version-update:semver-major]
 
   - package-ecosystem: github-actions
     directory: /
