@@ -1,0 +1,533 @@
+/* ============================================================================
+ * x — Peel design system
+ * A warm, scholarly system: Cormorant Garamond serif headings over Manrope body,
+ * parchment/linen surfaces, Ember (orange) as the platform brand and Ivy (green)
+ * + Brass for the education product register. Base Ember plus the "Schola"
+ * education variant.
+ *
+ * Two registers share the SAME token names:
+ *   :root                    → platform chrome — Ember accent on linen
+ *   [data-shell="product"]   → product surfaces — Ivy accent on parchment
+ * Components read token NAMES only; swapping the register re-themes the subtree.
+ * ========================================================================== */
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Manrope:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&display=swap');
+
+:root {
+  /* surfaces — linen */
+  --bg: #f7f4ee;
+  --bg-deep: #efe9dd;
+  --bg-card: #fffdf8;
+  --bg-elev: #fffefb;
+  --bg-sunk: #f1ece0;
+
+  /* ink — warm spine */
+  --ink: #262019;
+  --ink-soft: #4b4236;
+  --ink-faded: #776b59;
+  --ink-mute: #a99d88;
+
+  /* brand — Ember */
+  --accent: #f97316;
+  --accent-soft: #fb923c;
+  --accent-bg: rgba(249, 115, 22, 0.09);
+  --accent-ink: #ffffff;
+  /* Site actions are ink; a product's are its accent. One rule, two registers. */
+  --btn-fill: var(--ink);
+  --btn-ink: var(--nav-ink);
+
+  /* status — brass (warn), ivy (ok), oxblood (bad), slate (info) */
+  --status-ok: #356a4d;
+  --status-ok-bg: rgba(53, 106, 77, 0.11);
+  --status-warn: #b3873c;
+  --status-warn-bg: rgba(179, 135, 60, 0.14);
+  --status-bad: #9e3b2f;
+  --status-bad-bg: rgba(158, 59, 47, 0.11);
+  --status-info: #3f5a72;
+  --status-info-bg: rgba(63, 90, 114, 0.11);
+
+  --rule: #e2d9c8;
+  --rule-soft: rgba(38, 32, 25, 0.08);
+  --focus-ring: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent);
+  /* The wash behind a modal. A token because every dialog needs one and the
+     alternative — each writing its own rgba() — is how a hard-coded colour gets
+     into a themed system and stays there. */
+  --scrim: rgba(38, 32, 25, 0.38);
+
+  --radius-sm: 6px;
+  --radius: 8px;
+  --radius-lg: 14px;
+
+  --font-sans: 'Manrope', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-serif: 'Cormorant Garamond', ui-serif, Georgia, 'Times New Roman', serif;
+  --font-mono: 'Geist Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px;
+  --space-5: 20px; --space-6: 24px; --space-8: 32px; --space-10: 40px;
+  --space-12: 48px; --space-16: 64px;
+
+  /* ── Paper register ────────────────────────────────────────────────────────
+   * A research entity at depth is a short paper, and it should read like one.
+   * The measure is the whole trick: prose set to 68 characters is read; the same
+   * prose set full-width across a 1400px monitor is skimmed and then abandoned.
+   * Tables and figures are allowed to bleed wider than the text, because a table
+   * cramped to the text measure stops being readable — which is the one case
+   * where breaking the column is the right call.
+   */
+  --paper-measure: 68ch;        /* the reading column. Prose never exceeds it. */
+  --paper-wide: 86ch;           /* tables + figures may bleed to here */
+  --paper-abstract: 58ch;       /* narrower still, and italic — set apart by shape */
+  --paper-toc: 190px;           /* sticky contents rail, desktop only */
+  --paper-gutter: 44px;
+  --paper-section-gap: 52px;    /* between numbered sections */
+  --paper-sub-gap: 24px;        /* within one */
+
+  --shadow-1: 0 1px 0 rgba(38, 32, 25, 0.03);
+  --shadow-2: 0 1px 2px rgba(38, 32, 25, 0.05), 0 8px 24px rgba(38, 32, 25, 0.05);
+  --shadow-3: 0 12px 32px rgba(38, 32, 25, 0.10);
+
+  /* ── The dark chrome ───────────────────────────────────────────────────────
+   * The nav bar is the one surface that stays dark in both registers, so it needs
+   * its own ink scale rather than borrowing the page's. These existed as literals
+   * in the components until now, including an --accent hand-copied as #f97316 —
+   * which meant changing the brand colour would have re-themed the whole platform
+   * except the bar at the top of it. A token that is a copy of another token is a
+   * bug with a delay on it.
+   */
+  /* The site's whole signature: one charcoal, one bone, no hue. The registry
+     already ships Ivy, Indigo and Terracotta and anything added later brings a
+     fourth — a frame with no hue of its own cannot clash with a colour it does
+     not have, and every hue left on screen then belongs to a product or to a
+     status. Ember survives as a legacy token, not as site brand. */
+  --nav-bg: #211d18;
+  --nav-ink: #f6f2ea;
+  --nav-ink-soft: rgba(246, 242, 234, 0.72);
+  --nav-ink-faded: rgba(246, 242, 234, 0.50);
+  --nav-ink-mute: rgba(246, 242, 234, 0.22);
+  --nav-rule: rgba(246, 242, 234, 0.10);
+  --nav-hover: rgba(246, 242, 234, 0.12);
+  --nav-active: rgba(246, 242, 234, 0.16);
+  /* The dock floats over page content, dark-on-light. --shadow-2 is a
+     light-card shadow and vanishes underneath it. */
+  --dock-shadow: 0 16px 40px rgba(20, 16, 12, 0.30), 0 2px 6px rgba(20, 16, 12, 0.20);
+}
+
+/* Product register — Schola (education): Ivy primary on parchment, Brass accents. */
+[data-shell="product"] {
+  --bg: #faf8f2;
+  --bg-deep: #f1ece1;
+  --bg-card: #ffffff;
+  --bg-elev: #ffffff;
+  --bg-sunk: #f4efe4;
+
+  --ink: #262019;
+  --ink-soft: #4b4236;
+  --ink-faded: #776b59;
+  --ink-mute: #a99d88;
+
+  --accent: #356a4d;             /* Ivy 500 — product default (each product may override) */
+  --accent-soft: #4a8264;
+  --accent-bg: rgba(53, 106, 77, 0.09);
+  --accent-ink: #ffffff;
+  --btn-fill: var(--accent);
+  --btn-ink: var(--accent-ink);
+
+  --rule: #e4dccb;
+  --rule-soft: rgba(38, 32, 25, 0.08);
+
+  --shadow-1: 0 1px 0 rgba(38, 32, 25, 0.03);
+  --shadow-2: 0 1px 2px rgba(38, 32, 25, 0.05), 0 6px 18px rgba(38, 32, 25, 0.05);
+  --shadow-3: 0 10px 28px rgba(38, 32, 25, 0.10);
+}
+
+* { box-sizing: border-box; }
+html, body { padding: 0; margin: 0; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: inherit; text-decoration: none; }
+/* Scholarly serif headings (Cormorant Garamond) over Manrope body. */
+h1, h2 { font-family: var(--font-serif); font-weight: 600; line-height: 1.12; margin: 0; letter-spacing: 0; }
+h3, h4 { font-family: var(--font-sans); font-weight: 600; line-height: 1.2; margin: 0; letter-spacing: -0.01em; }
+h1 { font-size: 38px; } h2 { font-size: 27px; } h3 { font-size: 16px; } h4 { font-size: 14px; }
+p { margin: 0 0 var(--space-4); }
+/* max(), not a bare 0.9em: this was authored for 14–16px prose, but inline code now
+   lands in 12px and 13px slots (swot items, prior_art, benchmark values, launch claims),
+   where 0.9em yields 10.8–11.7px — on top of the 11px mono metadata rail. Three accidental
+   mono sizes nobody chose. The floor collapses them into one clear step above the rail. */
+code, .mono { font-family: var(--font-mono); font-size: max(0.9em, 12px); }
+hr { border: 0; border-top: 1px solid var(--rule); margin: var(--space-8) 0; }
+
+/* ── shared primitives ───────────────────────────────────────────────── */
+.wrap { max-width: 1080px; margin: 0 auto; padding: 0 var(--space-6); }
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  padding: var(--space-5);
+  box-shadow: var(--shadow-1);
+}
+/* A shelf that came back empty. Sunk and dashed, because the absence is the
+   content: a research site that renders a blank grid where its rivals should be
+   is lying by omission. */
+/* An empty-state card sets a faded ink, and `a { color: inherit }` means any link
+ * dropped inside it disappears. The primitive must not be able to swallow the one
+ * actionable thing it contains. */
+.card.empty a { color: var(--accent); }
+.card.empty {
+  background: var(--bg-sunk);
+  border-style: dashed;
+  box-shadow: none;
+  color: var(--ink-faded);
+}
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-faded);
+}
+.muted { color: var(--ink-faded); }
+.btn {
+  display: inline-flex; align-items: center; gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--btn-fill);
+  background: var(--btn-fill); color: var(--btn-ink);
+  font-weight: 600; font-size: 13px; cursor: pointer;
+}
+.btn.ghost { background: transparent; color: var(--btn-fill); }
+.btn:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+
+/* Range control (the research time scrubbers). A class rather than an inline style
+   because a pseudo-class cannot be expressed inline — which is how the keyboard
+   focus ring came to be missing on a control whose whole point is that you can
+   drive it from the keyboard. It picks up the warm --focus-ring like .btn does,
+   instead of the UA's cold default. */
+.range {
+  width: 100%;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+.range:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+  border-radius: var(--radius-sm);
+}
+
+/* Text input / select. Same reason .range is a class: :focus-visible cannot be
+   written inline, and a control styled inline silently falls back to the UA's
+   cold blue ring. Pairs with .btn — same padding, same radius, same focus. */
+.field {
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-sm);
+  background: var(--bg-card);
+  color: var(--ink);
+  font: inherit;
+  font-size: 13px;
+}
+.field::placeholder { color: var(--ink-mute); }
+.field:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: var(--focus-ring);
+}
+
+.pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 2px 8px; border-radius: 9999px;
+  font-size: 11px; font-weight: 500; line-height: 1.6;
+  border: 1px solid var(--rule);
+  background: var(--bg-sunk); color: var(--ink-soft);
+}
+/* Pills are used as buttons — filter tabs, board switchers, role pickers — and a
+   pill-button with no :focus-visible rule falls back to the UA's cold blue ring,
+   the same defect .range and .field are commented about above. One rule covers
+   every pill-button on the platform. */
+.pill:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+.pill.ok  { color: var(--status-ok);  background: var(--status-ok-bg);  border-color: transparent; }
+.pill.warn{ color: var(--status-warn);background: var(--status-warn-bg);border-color: transparent; }
+.pill.bad { color: var(--status-bad); background: var(--status-bad-bg); border-color: transparent; }
+.pill.info{ color: var(--status-info);background: var(--status-info-bg);border-color: transparent; }
+
+/* A pill inside a bold run must not sag. `.wikilink{font-weight:500}` is a class
+   selector and beats the UA sheet's `strong{font-weight:bolder}`, so the emphasized
+   token rendered LIGHTER than the emphasis around it — visible the moment renderInline
+   started nesting pills inside <strong> instead of leaking the `**`. */
+strong .wikilink { font-weight: inherit; }
+
+/* Same reason, second surface: a pill inside a launch claim out-weighted the claim's own
+   sentence, and often pointed at a different entity than the row it sat in. */
+.claim-text .wikilink { font-weight: inherit; }
+
+.wikilink {
+  color: var(--accent); border-bottom: 1px solid var(--accent-bg);
+  font-weight: 500;
+}
+.wikilink.dead { color: var(--status-bad); border-bottom-style: dotted; cursor: help; }
+
+.grid { display: grid; gap: var(--space-4); }
+.grid.cols-2 { grid-template-columns: repeat(2, 1fr); }
+.grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
+@media (max-width: 780px) { .grid.cols-2, .grid.cols-3 { grid-template-columns: 1fr; } }
+
+.depth { display: inline-flex; gap: 2px; align-items: center; }
+.depth i { width: 8px; height: 8px; border-radius: 2px; background: var(--rule); display: inline-block; }
+.depth i.on { background: var(--accent); }
+
+/* spinner */
+@keyframes spin { to { transform: rotate(360deg); } }
+.spin { animation: spin 0.8s linear infinite; }
+
+/* platform nav (landing / non-product chrome) */
+.pnav {
+  position: sticky; top: 0; z-index: 20;
+  display: flex; align-items: center; gap: var(--space-4);
+  padding: var(--space-3) var(--space-6);
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--rule);
+}
+.pnav .brand { font-family: var(--font-serif); font-weight: 700; font-size: 20px; letter-spacing: 0; }
+.pnav .spacer { flex: 1; }
+.pnav a { color: var(--ink-faded); font-size: 13px; }
+.pnav a.active, .pnav a:hover { color: var(--ink); }
+
+/* ══════════════════════════════════════════════════════════════════════════
+ * Paper register — a research entity at depth reads as a short paper.
+ *
+ * Two rules do most of the work here. Prose holds a 68-character measure, so a
+ * wide monitor gets margin rather than 200-character lines nobody finishes. And
+ * sections are NUMBERED, which is what lets a reader cite one ("see §3") and
+ * lets the contents rail mean something. Cards are for dashboards; a paper has
+ * a spine.
+ * ═════════════════════════════════════════════════════════════════════════ */
+
+.paper {
+  display: grid;
+  grid-template-columns: var(--paper-toc) minmax(0, 1fr);
+  gap: var(--paper-gutter);
+  align-items: start;
+}
+@media (max-width: 1080px) {
+  .paper { grid-template-columns: minmax(0, 1fr); }
+  .paper-toc { display: none; }
+}
+
+/* The contents rail. Sticky, quiet, and it tells you where you are. */
+.paper-toc {
+  position: sticky;
+  /* 52px product nav + 40px research nav + 20px of air. Both are sticky, so an
+     anchor that clears only the first one lands under the second. */
+  top: 112px;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  line-height: 1.5;
+  border-left: 1px solid var(--rule);
+  padding-left: var(--space-3);
+}
+.paper-toc ol { list-style: none; margin: 0; padding: 0; counter-reset: toc; }
+.paper-toc li { counter-increment: toc; margin-bottom: var(--space-2); }
+.paper-toc a { color: var(--ink-faded); text-decoration: none; display: block; }
+.paper-toc a::before {
+  content: counter(toc) ".";
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ink-mute);
+  margin-right: 6px;
+}
+.paper-toc a:hover { color: var(--accent); }
+
+/* The measure is enforced on the PROSE, not on the section that wraps it.
+ *
+ * Clamping the wrapper looks equivalent and is not: a figure or a table lives
+ * inside a section, so a wrapper clamp squeezes it to the text measure and its
+ * overflow-x turns into a horizontal scrollbar — the exact opposite of letting it
+ * bleed. So each prose element carries the measure, and .paper-wide is left
+ * unscoped so it wins at any depth. */
+.paper-body { max-width: var(--paper-wide); }
+.paper-body > header,
+.paper-body > .paper-abstract,
+.paper-section > p,
+.paper-section > ul,
+.paper-section > ol,
+.paper-section > h2,
+.paper-section h3,
+.paper-section > div > p,
+.paper-section > div > ul { max-width: var(--paper-measure); }
+
+/* Tables and figures earn the right to break the measure. Nothing else does. */
+.paper-wide { max-width: var(--paper-wide); }
+
+/* The title block. */
+.paper-title { font-family: var(--font-serif); font-size: 40px; line-height: 1.08; margin: 0; }
+.paper-byline {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ink-faded);
+  margin-top: 10px;
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* The abstract: narrower and italic, so its role is legible before it is read. */
+.paper-abstract {
+  max-width: var(--paper-abstract);
+  font-family: var(--font-serif);
+  font-size: 19px;
+  line-height: 1.5;
+  font-style: italic;
+  color: var(--ink-soft);
+  border-left: 2px solid var(--accent);
+  padding-left: var(--space-5);
+  margin: 32px 0 0;
+}
+
+/* Numbered sections — the spine of the thing. */
+.paper-section { margin-top: var(--paper-section-gap); scroll-margin-top: 112px; }
+.paper-section > h2 {
+  font-family: var(--font-serif);
+  font-size: 25px;
+  line-height: 1.2;
+  margin: 0 0 4px;
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+.paper-section > h2 .num {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--accent);
+  font-weight: 400;
+}
+.paper-section h3 {
+  font-family: var(--font-sans);
+  font-size: 16px;            /* the rung must clear the 14px body it heads */
+  font-weight: 600;
+  color: var(--ink);
+  margin: var(--paper-sub-gap) 0 var(--space-2);
+}
+.paper-section p { line-height: 1.62; margin: 10px 0 0; }
+.paper-section ul { margin: 10px 0 0; padding-left: 20px; }
+.paper-section li { margin-bottom: 6px; line-height: 1.55; }
+
+/* Figures and tables carry a number and a caption, so prose can point at them. */
+.paper-figure { margin: 24px 0 0; }
+.paper-figure svg { max-width: 100%; height: auto; }
+.paper-caption {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  color: var(--ink-faded);
+  margin-top: 8px;
+  line-height: 1.5;
+}
+.paper-caption b { color: var(--ink); font-weight: 600; }
+
+.paper-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 12px; }
+.paper-table th {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--ink-faded);
+  font-weight: 400;
+  text-align: left;
+  border-bottom: 1px solid var(--rule);
+  padding: var(--space-2) var(--space-3) var(--space-2) 0;
+}
+.paper-table td {
+  padding: var(--space-2) var(--space-3) var(--space-2) 0;
+  border-bottom: 1px solid var(--rule-soft);
+  vertical-align: top;
+}
+.paper-table td.num { font-family: var(--font-mono); white-space: nowrap; }
+/* A value cell that carries a phrase, not a figure: body font, wraps. The
+   benchmark table doubles as a qualitative comparison matrix, and a prose value
+   under td.num's nowrap would force one unbreakable line. Kept separate from
+   td.num so numeric cells keep their nowrap. */
+.paper-table td.prose { white-space: normal; }
+
+/* References. Hanging indent, because that is what a reference list looks like. */
+.paper-refs { list-style: none; margin: 12px 0 0; padding: 0; counter-reset: ref; }
+.paper-refs li {
+  counter-increment: ref;
+  position: relative;
+  padding-left: var(--space-8);
+  margin-bottom: 10px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.paper-refs li::before {
+  content: "[" counter(ref) "]";
+  position: absolute;
+  left: 0;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ink-mute);
+}
+.paper-refs a { color: var(--accent); }
+.paper-refs .date { font-family: var(--font-mono); font-size: 11px; color: var(--ink-faded); }
+
+/* The MOC's thesis. Given the abstract's shape because it does the abstract's
+ * job: it is the claim the whole map exists to defend. */
+.paper-lede {
+  max-width: var(--paper-measure);
+  font-family: var(--font-serif);
+  font-size: 19px;
+  line-height: 1.45;
+  font-weight: 500;
+  color: var(--ink);
+}
+
+/* A table figure. Geometry belongs to the class, not to an inline style — an
+ * inline copy silently overrides the stylesheet, and the next person to edit the
+ * rule finds it does nothing. */
+.paper-tablefig { margin: var(--space-5) 0 0; }
+.paper-tablefig > figcaption { margin-top: 0; margin-bottom: var(--space-2); }
+
+/* A footnote under a table: what the numbers do not say on their own — which of two
+ * figures is a closed deal, whose denominator this is.
+ *
+ * It is a <div>, not a <p>, because the pill renderer emits one <p> per paragraph and a
+ * <p> cannot contain a <p>: the parser auto-closes the outer one, the styles land on the
+ * empty remnant, and the real paragraphs escape into the <figure> — which, being a figure,
+ * is the one place allowed to break the measure. The note then rendered wider, larger and
+ * darker than the paper it annotated. A note is prose. Only tables and figures earn the
+ * right to break the measure, and this note is neither. */
+.paper-note { max-width: var(--paper-measure); margin-top: var(--space-3); }
+.paper-note p {
+  font-size: 13px;
+  line-height: 1.8;
+  color: var(--ink-faded);
+  margin: var(--space-2) 0 0;
+  max-width: var(--paper-measure);
+}
+.paper-note p:first-child { margin-top: 0; }
+/* The note is the figure's last child, so without this it sits as close to the NEXT table
+ * as to the one it explains, and binds to the wrong one. */
+.paper-tablefig:has(.paper-note) { margin-bottom: var(--space-8); }
+
+/* A worked formula is prose, not a figure. It has not earned the wide column, and
+ * a --bg-sunk slab running 18ch past the text is just a wide grey rectangle. */
+.paper-formula { max-width: var(--paper-measure); }
+
+/* A share card is draggable to the desktop (ShareCard.tsx). The inner SVG is made
+ * transparent to pointer events so the drag always originates from the card
+ * container — never from a text-selection inside the SVG — and the grab cursor
+ * covers the whole card. */
+.share-card-drag svg { pointer-events: none; }
+
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+
+/* Content id wrapper (app/_platform/copy). Every reader-visible string a
+   product page renders sits in one of these, tagged with its `data-cid`, so
+   the id is inspectable on the UI. `display: contents` means the span draws
+   no box: flex and grid parents see the words as they always did. */
+.cid { display: contents; }

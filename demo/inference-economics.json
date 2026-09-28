@@ -1,0 +1,73 @@
+{
+  "version": 1,
+  "exportedAt": "2026-09-26T23:14:35.429Z",
+  "product": {
+    "slug": "inference-economics",
+    "teamSlug": "growth-labs",
+    "name": "Inference Economics",
+    "tagline": "推理经济学 2022–2028 — run an inference business on real formulas.",
+    "accent": "#9A2F66",
+    "status": "active",
+    "visibility": "public",
+    "hasResearch": false,
+    "prdUrl": null,
+    "figmaUrl": null,
+    "wishBlock": 6,
+    "createdAt": 1790464344
+  },
+  "entities": [],
+  "edges": null,
+  "substrates": [],
+  "documents": [],
+  "product_files": [],
+  "ui_copy": [
+    {
+      "id": "inference-economics.home.bu1-1",
+      "value": "BU-1 · Inference"
+    },
+    {
+      "id": "inference-economics.home.bu2-1",
+      "value": "BU-2 · Pretraining"
+    },
+    {
+      "id": "inference-economics.home.div-1",
+      "value": "A business simulation · 2022 → 2028"
+    },
+    {
+      "id": "inference-economics.home.h1-1",
+      "value": "推理经济学 — run an inference business on real formulas"
+    },
+    {
+      "id": "inference-economics.home.h2-1",
+      "value": "Leaderboard"
+    },
+    {
+      "id": "inference-economics.home.p-1",
+      "value": "No finished run yet. The first person to play all the years lands here."
+    },
+    {
+      "id": "inference-economics.home.p-2",
+      "value": "Two business lines, one set of equations. In BU-1 you buy GPUs, queue for power, unlock the inference stack and tune batch and precision per card, then settle each year on TPOT, goodput and dollars per million tokens. In BU-2 you design a base model, split its parallelism, pay the long-run tax and let the scaling law grade you — then read off the inference cost floor your architecture just locked in."
+    },
+    {
+      "id": "inference-economics.home.p-3",
+      "value": "Progress saves to your account after every decision, so you can continue from any device. Hardware specs, the seven years, the tech tree and the glossary all come from this product's database."
+    },
+    {
+      "id": "inference-economics.home.p-4",
+      "value": "Every completed game, best first. Demo runs are not counted."
+    },
+    {
+      "id": "inference-economics.home.span-1",
+      "value": "score = seven-year average coverage"
+    },
+    {
+      "id": "inference-economics.home.span-2",
+      "value": "score = profit, best capability, final share"
+    },
+    {
+      "id": "inference-economics.home.title-1",
+      "value": "推理经济学 2022–2028"
+    }
+  ]
+}

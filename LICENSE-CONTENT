@@ -1,0 +1,61 @@
+Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International
+(CC BY-NC-SA 4.0)
+
+WHAT THIS COVERS
+
+This licence applies to the research corpus and other prose in this repository,
+specifically:
+
+    app/(products)/*/research/content/**     entities, edges, substrates, sharing
+    app/(products)/*/_research.ts            researched opportunities
+    app/(products)/*/_shipped.ts             changelog prose
+
+Everything else — all source code — is licensed under AGPL-3.0. See LICENSE.
+
+WHY IT IS LICENSED SEPARATELY
+
+The corpus is analytical writing about real, named companies. It is not software,
+and a software licence is the wrong instrument for it. It also quotes and cites
+third-party material (see THIRD-PARTY MATERIAL below), which a code licence has
+no way to account for.
+
+WHAT YOU MAY DO
+
+  Share    — copy and redistribute in any medium or format
+  Adapt    — remix, transform, and build upon the material
+
+UNDER THESE TERMS
+
+  Attribution   — credit the source, link to this licence, and state whether you
+                  made changes. Do it in a way that does not suggest endorsement.
+
+  NonCommercial — not for commercial advantage or monetary compensation. If you
+                  want to use the corpus commercially, see COMMERCIAL-LICENSE.md.
+
+  ShareAlike    — if you remix or build upon it, distribute your contribution
+                  under this same licence.
+
+  No additional restrictions — you may not apply legal terms or technological
+                  measures that legally restrict others from anything this
+                  licence permits.
+
+FULL LEGAL TEXT
+
+  https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode
+  Human-readable summary: https://creativecommons.org/licenses/by-nc-sa/4.0/
+
+The canonical text at that URL governs. This file is a pointer and a scope
+statement, not a substitute for it.
+
+THIRD-PARTY MATERIAL
+
+The corpus cites and quotes external sources — papers, filings, press reports,
+vendor documentation. Those excerpts remain the property of their respective
+owners and are included here as citation and commentary. This licence does not
+and cannot grant you rights over them. If you reuse a quotation, honour the
+original source's terms, and keep the citation attached: every claim in this
+corpus names the evidence it rests on, and a quote separated from its source
+stops being evidence.
+
+Company names, product names and trademarks appearing in the corpus belong to
+their respective owners and are used for identification and commentary only.

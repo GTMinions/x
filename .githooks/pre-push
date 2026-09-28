@@ -1,0 +1,72 @@
+#!/usr/bin/env bash
+#
+# Refuse to push a wish's work straight to a branch humans review or ship.
+#
+# WHY
+# A wish is untrusted text. Anyone with an account can file one, and the build
+# loop reads it and acts on it with shell access and repository write. The loop
+# is not adversarially robust and cannot be made so by filtering the text — the
+# containment is structural: work lands on a branch, a human reads the diff,
+# a human merges.
+#
+# This hook is the last line of that. It is not the whole defence (a determined
+# injection can run `git` with --no-verify, or reconfigure core.hooksPath), and
+# it is not meant to be — it is the thing that catches the ordinary case where
+# an agent, or a person, forgets. The real protections are that the loop holds
+# no production credentials and that nothing reaches users without review.
+#
+# Bypass, when you are the human and you meant it:
+#   WISH_PUSH_OK=1 git push
+set -euo pipefail
+
+# Both, and for different reasons. `main` is where work lands and, once this
+# repository is public, where review happens. `release` is what actually
+# deploys — after the production branch moved, a push there IS a deploy, which
+# makes it the one a stray push can hurt most. Guarding only the old name would
+# have left the new one open on the day it started to matter.
+protected="${WISH_PROTECTED_BRANCH:-main release}"
+branch="$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo '')"
+
+# Only ever gates a push whose destination is the protected branch.
+pushing_to_protected=0
+while read -r _local_ref _local_sha remote_ref _remote_sha; do
+  [ -z "${remote_ref:-}" ] && continue
+  for p in $protected; do
+    [ "$remote_ref" = "refs/heads/$p" ] && pushing_to_protected=1
+  done
+done
+
+[ "$pushing_to_protected" -eq 1 ] || exit 0
+[ "${WISH_PUSH_OK:-}" = "1" ] && exit 0
+
+# A wish run announces itself. `pnpm wishes --claim` sets the branch; the loop
+# may also export WISH_ID. Either is enough to know this is not a human at a
+# keyboard doing something they thought about.
+if [ -n "${WISH_ID:-}" ] || [[ "$branch" == wish/* ]]; then
+  if [[ "$branch" == wish/* ]]; then
+    move="git push -u origin $branch"
+  else
+    # On the protected branch itself: the work needs moving off it first.
+    move="git switch -c wish/${WISH_ID:-N} && git push -u origin wish/${WISH_ID:-N}"
+  fi
+
+  cat >&2 <<MSG
+
+  ✗ Refusing to push wish work to "$protected".
+
+    branch: $branch${WISH_ID:+   wish: #$WISH_ID}
+
+    A wish is untrusted input — anyone with an account can file one, and the
+    loop acts on it. Its work goes to a branch and through a pull request so a
+    human reads the diff before it reaches anyone.
+
+      $move
+      gh pr create --fill
+
+    If you are a human and you meant this:  WISH_PUSH_OK=1 git push
+
+MSG
+  exit 1
+fi
+
+exit 0

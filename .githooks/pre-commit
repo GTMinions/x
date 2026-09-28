@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+# Enable with: git config core.hooksPath .githooks
+set -euo pipefail
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+bash "$DIR/check-product-scope.sh"
+
+# Secret scan of what is about to be committed. gitleaks is optional locally —
+# CI runs it on every push and PR — but when it is installed there is no reason
+# to find out later. https://github.com/gitleaks/gitleaks
+if command -v gitleaks >/dev/null 2>&1; then
+  gitleaks protect --staged --redact --no-banner || {
+    echo "[gitleaks] a staged change looks like a credential. Remove it, or add an allowlist entry in .gitleaks.toml with a reason." >&2
+    exit 1
+  }
+else
+  echo "[gitleaks] not installed — skipping the local secret scan (CI still runs it)"
+fi

@@ -1,0 +1,132 @@
+# deps
+/node_modules
+/.pnp
+.pnp.js
+
+# next
+/.next/
+/out/
+next-env.d.ts.timestamp
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# env / secrets
+.env
+.env*.local
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+
+# Databases, all of them, by extension rather than by name.
+#
+# The local identity DB (written by app/lib/identity/db.ts when
+# ACCOUNTS_DATABASE_URL is unset) holds real accounts, sessions and a private
+# signing key. Test runs and the odd experiment leave others behind.
+#
+# This used to list `/identity.db` and `*.sqlite` specifically, and a
+# `sparko-accounts.db` was committed straight through the gap. A database file
+# has no business in this repository whatever it is called, so the rule is the
+# extension, not the filename.
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+# Local mode: one SQLite file per scope, the whole platform on one machine.
+/.local-db/
+
+# Any local libsql file — an accounts DB, a scratch content DB. Never source.
+*.db
+*.db-*
+
+# Run logs written by the autonomous loop, one per hourly slot. They are a local
+# operational trace, not source: they grow without bound, they carry whatever the
+# run happened to observe, and nothing in the app requires them (the reader in
+# app/_platform/wishes/runs.ts treats a missing dir as "this wish has no run").
+# Keeping them out of the repo means no per-slot audit of what a log leaked.
+/cronjobs/logs/
+
+# generated research artifacts (rebuilt by scripts/)
+/public/topology.json
+/public/topology-history.json
+/public/search-index.json
+
+# Entity first-seen dates used to be a committed floor at
+# data/topology-timestamps-cache.json. They now live in each product database
+# beside the entities and pull to research/content/_timestamps.json (already
+# ignored with the rest of the content). See scripts/build-topology-history.ts.
+
+# validate-sources memoises live URL checks; machine-local, not shared state.
+data/url-check-cache.json
+.env*
+
+# Per-product research content that lives in a database, not in git.
+# `pnpm product:db pull <slug>` writes it here before a build; the repo never
+# carries it. This is the confidentiality boundary: git has exactly one, so a
+# corpus that must stay private cannot be committed to a shared repository.
+# Products whose content IS in git (the open-source example) are not listed.
+/app/(products)/inference-economics/research/content/
+
+# The product's data modules. `_store.ts` and friends are IMPORTED, not read at
+# runtime — a page does `import { COURSES } from "../_store"` — so an absent file
+# is a compile error, not an empty list. The real files hold that product's
+# content and live in its database; git carries only the generated `*.stub.ts`
+# beside them, which keeps every type and signature so the compiler is satisfied
+# and every body empty so no content ships. `prebuild` pulls the real ones, or
+# copies the stubs when there is no credential. Regenerate one with
+# `npx tsx scripts/make-store-stub.ts <slug> _store.ts`.
+/app/(products)/*/_store.ts
+/app/(products)/*/_research.ts
+/app/(products)/*/_shipped.ts
+
+# A product's own agent and skills. They say which sources the product trusts
+# and what its research has already covered — a description of a private corpus
+# is as private as the corpus — so they live in the product's database
+# (product_files, with a version per change) and pull to disk before a build.
+# The platform's org at the repo root (.claude/) is not a product's and stays.
+/app/(products)/*/.claude/
+
+# The words on the product's pages. Every page carries content ids
+# (`<product>.<page>.<tag>-<n>`, see app/_platform/copy) and this file maps
+# each id to its text; it is one row per id in the product's `ui_copy` table,
+# written by `product:db pull` and read back by `push`. Without it a page
+# renders every id in brackets — visible, and content-free.
+/app/(products)/*/_copy.json
+# The platform's own copy (`site` scope) IS committed: it is the platform's
+# words, not a product's, and a fresh install needs them before its site
+# database has any. `product:db pull site` overwrites it when the database has
+# rows; `push site` seeds a fresh database from it.
+
+# The site's private records, synced through the site database like a product's
+# files: the loop's queue, and the memory notes written in the founder's own
+# voice. Platform doctrine in .claude/memory/*.md stays in git.
+/cronjobs/run-state.json
+/.claude/memory/private/
+
+# Sync snapshots: what `product:db push|pull` last wrote, so a pull can tell a
+# stale working copy from an unpushed edit and refuse to overwrite the latter.
+/.product-db/
+
+# Database dumps from `pnpm db:backup`. Every account, every membership, the
+# signing key and users' encrypted API keys — the last thing that should ever
+# be committed. Keep them where you keep the databases themselves.
+/backups/
+.env.local.bak.*
+cronjobs/btw-backlog.md
+
+# apply-site-chrome.sh writes these beside every file it rewrites
+*.bak

@@ -1,0 +1,110 @@
+# Who must approve a change before it can merge.
+#
+# A MERGE gate, not a write permission. Anyone may propose a change to any path;
+# this file decides whose approval the proposal needs — once "Require review
+# from Code Owners" is on in the branch rule for `main`. Without that rule this
+# file only suggests reviewers and enforces nothing.
+#
+# ── THE ONE MECHANICAL RULE ────────────────────────────────────────────────
+# GitHub applies the LAST matching pattern, not the most specific one. So the
+# broad tiers come first and the guardrails come last: a later narrow line
+# overrides an earlier broad one. Reversing two blocks silently widens who can
+# approve the most sensitive files, and nothing reports it. If you edit this
+# file, keep the order.
+#
+# ── THE TIERS ──────────────────────────────────────────────────────────────
+# Tier 2 — unowned. The README and other prose. CI still gates it; no approver.
+#
+#          Product code is NOT here, and that is the point. A product's files
+#          are the *output* of a wish that a worker built, not a place outside
+#          contributions land — the open-source project is the platform, and the
+#          products are its demos. A pull request against a product folder from
+#          someone who is not the worker is doing by hand what the wish pipeline
+#          exists to do, and skips everything that pipeline enforces: the scope
+#          guardrail, the approval rule, the critics, the receipt. So product
+#          paths are owned, and CONTRIBUTING.md says to file a wish instead.
+#
+# Tier 1 — capability. The shared platform, the API, the tooling: code that is
+#          load-bearing but whose failure mode is a bug. This is the tier to
+#          delegate first. To hand it to more people, create a team and replace
+#          @gavinxyang on the Tier 1 lines only:
+#              /app/_platform/  @GTMinions/maintainers
+#          Do not name a team that does not exist yet — GitHub treats an
+#          unresolvable owner as no owner, so the path silently becomes
+#          approvable by anyone. That fails open, which is the wrong direction.
+#
+# Tier 0 — principle. The guardrails, the trust boundary, the licence. A change
+#          here can switch off the checks, move who may read what, or alter the
+#          terms — so it is reviewed by the person accountable for it and is not
+#          delegated as the project grows. This tier should almost never change;
+#          if it changes often, something below it is in the wrong tier.
+
+# ═══ TIER 1 — capability (delegate this tier first) ════════════════════════
+
+/app/_platform/           @gavinxyang
+/app/lib/                 @gavinxyang
+/app/api/                 @gavinxyang
+/scripts/                 @gavinxyang
+# A deleted assertion leaves CI green. Weakening a test is a quiet way to
+# weaken everything the test was standing in for.
+/test/                    @gavinxyang
+/vitest.config.ts         @gavinxyang
+/CONTRIBUTING.md          @gavinxyang
+# Product code arrives through the wish pipeline, authored by the worker, on a
+# `wish/<n>` branch. Owning it here does not block that — the ruleset's bypass
+# list covers the maintainer — it means a hand-written pull request against
+# someone's generated demo gets read before it lands.
+/app/(products)/          @gavinxyang
+
+# ═══ TIER 0 — principle (never delegated; MUST stay below Tier 1) ══════════
+
+# The checks themselves. Self-referential: a diff that disables the review is
+# reviewed by what it disables, so it never leaves this tier.
+/.github/                 @gavinxyang
+/.githooks/               @gavinxyang
+/scripts/validate-content.ts  @gavinxyang
+/scripts/product-db.ts    @gavinxyang
+/scripts/backup-db.ts     @gavinxyang
+
+# The trust boundary: who is who, who may read what, who may approve.
+/proxy.ts                 @gavinxyang
+/app/lib/identity/        @gavinxyang
+/app/lib/access.ts        @gavinxyang
+/app/lib/approval.ts      @gavinxyang
+/app/lib/memberships.ts   @gavinxyang
+/app/lib/auth.ts          @gavinxyang
+/app/lib/googleAuth.ts    @gavinxyang
+/app/lib/worker.ts        @gavinxyang
+/app/lib/turso.ts         @gavinxyang
+/app/lib/rateLimit.ts     @gavinxyang
+/app/lib/usage.ts         @gavinxyang
+/app/lib/products.ts      @gavinxyang
+# Re-exports the whole membership surface and carries `canDesign` — a change
+# here can move a permission without touching the file that defines it.
+/app/lib/platform.ts      @gavinxyang
+
+# Routes that are themselves a boundary rather than a feature.
+/app/api/internal/        @gavinxyang
+/app/api/admin/           @gavinxyang
+/app/api/auth/            @gavinxyang
+/app/api/account/         @gavinxyang
+
+# Build and supply chain. A dependency added here runs with everything the
+# build can reach; a config change can turn a check off without touching it.
+/package.json             @gavinxyang
+/pnpm-lock.yaml           @gavinxyang
+/next.config.ts           @gavinxyang
+/vercel.json              @gavinxyang
+/tsconfig.json            @gavinxyang
+
+# The agent org and the rules it works under.
+/.claude/                 @gavinxyang
+/CLAUDE.md                @gavinxyang
+
+# Licence and legal. Changing the terms is not a code review.
+/LICENSE                  @gavinxyang
+/LICENSE-CONTENT          @gavinxyang
+/NOTICE                   @gavinxyang
+/CLA.md                   @gavinxyang
+/COMMERCIAL-LICENSE.md    @gavinxyang
+/SECURITY.md              @gavinxyang

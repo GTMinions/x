@@ -1,0 +1,11 @@
+# gitleaks configuration. The default rules apply; this file exists so an
+# allowlist entry has a place to live, with its reason beside it.
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Things that look like secrets and are not."
+paths = [
+  # The demo product bundle: research JSON and page copy, not credentials.
+  '''demo/.*\.json''',
+]

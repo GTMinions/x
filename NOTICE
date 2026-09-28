@@ -1,0 +1,59 @@
+x
+Copyright (C) 2026 GTMinions
+
+This program is free software: you can redistribute it and/or modify it under
+the terms of the GNU Affero General Public License as published by the Free
+Software Foundation, either version 3 of the License, or (at your option) any
+later version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+PARTICULAR PURPOSE. See the GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License along
+with this program. If not, see <https://www.gnu.org/licenses/>.
+
+A commercial licence is available for those who cannot meet the AGPL's
+source-disclosure requirement. See COMMERCIAL-LICENSE.md.
+
+--------------------------------------------------------------------------------
+LICENCE MAP
+--------------------------------------------------------------------------------
+
+  Source code                          AGPL-3.0-only        LICENSE
+  Research corpus + prose              CC BY-NC-SA 4.0      LICENSE-CONTENT
+  Contributions                        CLA required         CLA.md
+  Commercial use without disclosure    paid                 COMMERCIAL-LICENSE.md
+
+--------------------------------------------------------------------------------
+THIRD-PARTY DEPENDENCIES
+--------------------------------------------------------------------------------
+
+This software depends on the following packages. All are under permissive
+licences compatible with AGPL-3.0. Their full texts ship inside node_modules.
+
+  @libsql/client        MIT          https://github.com/tursodatabase/libsql-client-ts
+  drizzle-orm           Apache-2.0   https://github.com/drizzle-team/drizzle-orm
+  jose                  MIT          https://github.com/panva/jose
+  lucide-react          ISC          https://github.com/lucide-icons/lucide
+  nanoid                MIT          https://github.com/ai/nanoid
+  next                  MIT          https://github.com/vercel/next.js
+  nodemailer            MIT-0        https://github.com/nodemailer/nodemailer
+  pptxgenjs             MIT          https://github.com/gitbrent/PptxGenJS
+  react, react-dom      MIT          https://github.com/facebook/react
+  server-only           MIT          https://github.com/vercel/next.js
+  sharp                 Apache-2.0   https://github.com/lovell/sharp
+  tsx                   MIT          https://github.com/privatenumber/tsx
+  typescript            Apache-2.0   https://github.com/microsoft/TypeScript
+
+--------------------------------------------------------------------------------
+TRADEMARKS AND THIRD-PARTY NAMES
+--------------------------------------------------------------------------------
+
+The research corpus analyses named companies and products. Those names and
+marks belong to their owners and appear here for identification and commentary.
+Nothing in this repository implies affiliation with, sponsorship by, or
+endorsement from any of them.
+
+Sources quoted in the corpus remain the property of their publishers. See
+LICENSE-CONTENT.

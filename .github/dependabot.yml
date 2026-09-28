@@ -1,0 +1,29 @@
+# Dependency updates.
+#
+# Weekly rather than daily: this project has one maintainer, and a PR nobody
+# reads is worse than no PR — it trains you to ignore the label that will one
+# day carry a real advisory.
+#
+# Minor and patch bumps are grouped into a single PR per ecosystem for the same
+# reason. Majors arrive on their own, because they need reading.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    groups:
+      minor-and-patch:
+        update-types: [minor, patch]
+    ignore:
+      # Next.js majors change routing and rendering semantics; this repo pins a
+      # version deliberately and upgrades on purpose, not on a schedule.
+      - dependency-name: next
+        update-types: [version-update:semver-major]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
