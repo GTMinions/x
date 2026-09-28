@@ -130,3 +130,6 @@ cronjobs/btw-backlog.md
 
 # apply-site-chrome.sh writes these beside every file it rewrites
 *.bak
+
+# Personal launch checklist — never ships
+/docs/GOING-PUBLIC-STEPS.md

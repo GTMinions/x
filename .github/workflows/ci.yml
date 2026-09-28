@@ -1,0 +1,254 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+# Every third-party action is pinned to a COMMIT SHA, not a tag. A tag is a
+# movable label: whoever owns the action can repoint `v4` at new code, and every
+# repository that trusts the tag runs it on the next build without a diff to
+# review. A SHA cannot be repointed. The `# v4` comment says what the SHA was
+# when it was pinned; the SHA is what actually runs.
+#
+# A fork's PR gets a read-only token and no secrets. Nothing here needs either:
+# the build runs with no environment at all, which is also the guarantee we want
+# to keep testing — a clone with no secrets must build.
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: build + content gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # Deliberately no env. `pnpm build` runs the research gate first
+      # (validate-content → slides → coherence → topology → search-index), then
+      # next build. A fresh clone with no secrets must pass this.
+      - name: build
+        run: pnpm build
+
+      # Unit suites. Run BEFORE the build in wall-clock terms they are free,
+      # and they fail on the things a green build cannot see: a product quietly
+      # readable by everyone, two products sharing an id block, a wish field
+      # that stopped round-tripping. Each one would otherwise ship as a working
+      # site doing the wrong thing.
+      - name: tests
+        run: pnpm test
+
+      - name: membership store selftest
+        run: pnpm platform:selftest
+
+  scope:
+    name: product isolation
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+
+      # Enforces .claude/skills/do_not_impact_other_product against the diff.
+      # A PR that edits two products, or mixes a product with the spine, fails
+      # here — which is the only place the rule binds a contributor who never
+      # enabled the local hook.
+      - name: derive scope from the diff
+        run: |
+          base="${{ github.event.pull_request.base.sha }}"
+          head="${{ github.event.pull_request.head.sha }}"
+          files=$(git diff --name-only "$base" "$head")
+          echo "changed:"; echo "$files" | sed 's/^/  /'
+
+          products=$(echo "$files" | grep -oE '^app/\(products\)/[^/]+' | sort -u | sed 's|.*/||' || true)
+          count=$(echo "$products" | grep -c . || true)
+
+          if [ "$count" -gt 1 ]; then
+            echo "::error::PR touches more than one product: $(echo $products | tr '\n' ' ')"
+            echo "Each product is isolated. Split this into one PR per product."
+            exit 1
+          fi
+
+          if [ "$count" -eq 1 ]; then
+            spine=$(echo "$files" | grep -v '^app/(products)/' || true)
+            if [ -n "$spine" ]; then
+              echo "::error::PR mixes product '$products' with shared code:"
+              echo "$spine" | sed 's/^/  /'
+              echo "Shared changes inherit to every product and are reviewed separately."
+              exit 1
+            fi
+            echo "scope: product '$products'"
+          else
+            echo "scope: site (no product folder touched)"
+          fi
+
+  privileged:
+    name: privileged paths
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+
+      # The escalation paths: a change to any of these can switch off every
+      # other check in this file, so the next PR sails through unexamined.
+      #
+      # The verdict depends on where the PR came from, because the two cases are
+      # genuinely different:
+      #
+      #   From a FORK — refused. An outside contributor never has a legitimate
+      #   reason to edit the checks, the git hooks, or the lockfile in the same
+      #   breath as their contribution. Refusing is not a judgement about them;
+      #   it removes a class of PR that a reviewer would otherwise have to
+      #   inspect with total attention every single time, and reviewers are
+      #   exactly what gets tired.
+      #
+      #   From a BRANCH ON THIS REPO — flagged, not blocked. That is the
+      #   maintainer changing the rules on purpose, which has to remain possible
+      #   or the rules could never be fixed. CODEOWNERS still holds it: the
+      #   merge needs a review either way.
+      - name: guard the guards
+        env:
+          IS_FORK: ${{ github.event.pull_request.head.repo.fork }}
+        run: |
+          base="${{ github.event.pull_request.base.sha }}"
+          head="${{ github.event.pull_request.head.sha }}"
+          files=$(git diff --name-only "$base" "$head")
+
+          # Two lists, because the two risks are not the same kind of thing.
+          #
+          # REFUSED from a fork: a change here can turn the review off. It is
+          # self-referential — the diff that disables the checks is checked by
+          # the checks it disables — so no amount of care at review time is a
+          # reliable answer, and the honest response is not to accept the class.
+          #
+          # FLAGGED, never refused: a dependency. It is the classic supply-chain
+          # vector, but it is also *legible* — a package name can be read, looked
+          # up, and judged. Refusing it would stop outside contributors from
+          # writing anything that needs a library, which is most real work. The
+          # summary job lists exactly which packages a PR adds; that is the
+          # control, and it is one a human can actually exercise.
+          refuse=$(echo "$files" | grep -E '^(\.github/|\.githooks/|scripts/validate-|scripts/check-scope\.sh|proxy\.ts|next\.config\.ts|vercel\.json|\.claude/)' || true)
+          deps=$(echo "$files" | grep -E '^(package\.json|pnpm-lock\.yaml)$' || true)
+          guards="$refuse$deps"
+
+          if [ -z "$guards" ]; then
+            echo "no privileged paths touched"
+            exit 0
+          fi
+
+          if [ -n "$deps" ]; then
+            echo "::warning::This PR changes dependencies — see 'Packages this PR adds' in the summary."
+            echo "$deps" | sed 's/^/  /'
+          fi
+
+          if [ -z "$refuse" ]; then exit 0; fi
+
+          echo "This PR changes files that govern the build, the access gate, or the agent rules:"
+          echo "$refuse" | sed 's/^/  /'
+
+          if [ "$IS_FORK" = "true" ]; then
+            echo "::error::A pull request from a fork may not change the project's own guardrails."
+            echo ""
+            echo "These paths decide whether every other check runs at all, so a change to them"
+            echo "cannot be reviewed on the same footing as ordinary code — the diff that would"
+            echo "disable the checks is checked by the checks it disables. Open an issue saying"
+            echo "what needs to change and why, and it will be made separately."
+            echo ""
+            echo "Everything else is open to pull requests, including the shared platform code"
+            echo "under app/_platform, app/lib and app/api, and including new dependencies."
+            exit 1
+          fi
+
+          echo "::warning::Privileged paths changed on an internal branch — review these by hand."
+
+  # ── the review aid ─────────────────────────────────────────────────────────
+  # Not a gate. Every check above answers yes/no; this one answers "what am I
+  # actually looking at", because the failure mode of a busy maintainer is not
+  # approving something a check rejected — it is approving a large green diff
+  # without noticing the one line that mattered.
+  summary:
+    name: what to review
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+
+      - name: describe the diff
+        env:
+          IS_FORK: ${{ github.event.pull_request.head.repo.fork }}
+          AUTHOR: ${{ github.event.pull_request.user.login }}
+        run: |
+          base="${{ github.event.pull_request.base.sha }}"
+          head="${{ github.event.pull_request.head.sha }}"
+          files=$(git diff --name-only "$base" "$head")
+
+          say() { echo "$1" >> "$GITHUB_STEP_SUMMARY"; }
+
+          say "## What this PR touches"
+          say ""
+          say "From \`$AUTHOR\` — fork: \`${IS_FORK:-false}\`"
+          say ""
+
+          bucket() {
+            local label="$1" pattern="$2"
+            local hits
+            hits=$(echo "$files" | grep -E "$pattern" || true)
+            [ -z "$hits" ] && return
+            say "### $label"
+            say ""
+            say '```'
+            echo "$hits" | sed 's/^/  /' >> "$GITHUB_STEP_SUMMARY"
+            say '```'
+            say ""
+          }
+
+          bucket "Guardrails — read every line" '^(\.github/|\.githooks/|scripts/validate-|proxy\.ts|next\.config\.ts|vercel\.json|\.claude/)'
+          bucket "Dependencies — see the added packages below" '^(package\.json|pnpm-lock\.yaml)$'
+          bucket "Shared platform — inherited by every product" '^app/(_platform|lib|api)/'
+          bucket "Product code" '^app/\(products\)/'
+          bucket "Tests" '^test/'
+          bucket "Docs and licence" '\.(md|txt)$|^LICENSE|^NOTICE'
+
+          # The single highest-signal line in a supply-chain review: what is new
+          # in the lockfile that was not there before.
+          if echo "$files" | grep -q '^pnpm-lock\.yaml$'; then
+            say "### Packages this PR adds"
+            say ""
+            added=$(diff <(git show "$base:pnpm-lock.yaml" 2>/dev/null | grep -oE "^  /?[@a-z0-9._-]+@[0-9]" | sort -u) \
+                         <(git show "$head:pnpm-lock.yaml" 2>/dev/null | grep -oE "^  /?[@a-z0-9._-]+@[0-9]" | sort -u) \
+                    | grep '^>' | sed 's/^> //' || true)
+            if [ -n "$added" ]; then
+              say '```'
+              echo "$added" | sed 's/^/  /' >> "$GITHUB_STEP_SUMMARY"
+              say '```'
+              say ""
+              say "**A new dependency runs with everything the build can reach.** Check the"
+              say "package exists, is the one meant, and is not a lookalike of a popular name."
+            else
+              say "None — versions changed but no new package names."
+            fi
+          fi
